@@ -20,8 +20,7 @@ export class BoardComponent implements OnInit {
     this.setupInitialPosition();
   }
 
-  selectOrMove(field: Field) {
-    console.log("> clicked on " + field.index);
+  interactWithField(field: Field) {
     if (this.selectedField && field.isPossibleMoveDest) {
       this.move(field);
     } else {
@@ -31,59 +30,70 @@ export class BoardComponent implements OnInit {
   }
 
   private move(field: Field) {
-    console.log("> MOVING TO" + field.index);
     field.setPiece(this.selectedField?.occupiedBy!, this.selectedField?.piece!)
     this.selectedField?.setEmpty();
     this.clearPreviousSelection();
   }
 
   private selectField(field: Field) {
-    console.log("> selecting field " + field.index);
     if (field.isEmpty()) return;
     this.selectedField = field;
 
     field.isSelected = true;
-    // mark possible destinations
+    this.markPossibleDestinations(field);
+  }
+
+  private markPossibleDestinations(field: Field) {
     const i = field.index;
     switch (field.piece) {
       case PieceType.KING:
-        if (i - 1 >= 0 && this.fields[i - 1].occupiedBy !== field.occupiedBy) {
-          this.fields[i - 1].isPossibleMoveDest = true;
-        }
-        if (i + 1 < 8 && this.fields[i + 1].occupiedBy !== field.occupiedBy) {
-          this.fields[i + 1].isPossibleMoveDest = true;
-        }
+        this.kingMoves(i, field);
         break;
       case PieceType.KNIGHT:
-        if (i - 2 >= 0 && this.fields[i - 2].occupiedBy !== field.occupiedBy) {
-          this.fields[i - 2].isPossibleMoveDest = true;
-        }
-        if (i + 2 < 8 && this.fields[i + 2].occupiedBy !== field.occupiedBy) {
-          this.fields[i + 2].isPossibleMoveDest = true;
-        }
+        this.knightMoves(i, field);
         break;
       case PieceType.ROOK:
-        // look forward
-        let next = i;
-        while (++next < 8 && this.fields[next].occupiedBy !== field.occupiedBy) {
-          this.fields[next].isPossibleMoveDest = true;
-          if (!this.fields[next].isEmpty()) {
-            break;
-          }
-        }
-        next = i;
-        while (--next < 8 && this.fields[next].occupiedBy !== field.occupiedBy) {
-          this.fields[next].isPossibleMoveDest = true;
-          if (!this.fields[next].isEmpty()) {
-            break;
-          }
-        }
+        this.rookMoves(i, field);
         break;
     }
   }
 
+  private rookMoves(i: number, field: Field) {
+    let next = i;
+    while (++next < 8 && this.fields[next].occupiedBy !== field.occupiedBy) {
+      this.fields[next].isPossibleMoveDest = true;
+      if (!this.fields[next].isEmpty()) {
+        break;
+      }
+    }
+    next = i;
+    while (--next < 8 && this.fields[next].occupiedBy !== field.occupiedBy) {
+      this.fields[next].isPossibleMoveDest = true;
+      if (!this.fields[next].isEmpty()) {
+        break;
+      }
+    }
+  }
+
+  private knightMoves(i: number, field: Field) {
+    if (i - 2 >= 0 && this.fields[i - 2].occupiedBy !== field.occupiedBy) {
+      this.fields[i - 2].isPossibleMoveDest = true;
+    }
+    if (i + 2 < 8 && this.fields[i + 2].occupiedBy !== field.occupiedBy) {
+      this.fields[i + 2].isPossibleMoveDest = true;
+    }
+  }
+
+  private kingMoves(i: number, field: Field) {
+    if (i - 1 >= 0 && this.fields[i - 1].occupiedBy !== field.occupiedBy) {
+      this.fields[i - 1].isPossibleMoveDest = true;
+    }
+    if (i + 1 < 8 && this.fields[i + 1].occupiedBy !== field.occupiedBy) {
+      this.fields[i + 1].isPossibleMoveDest = true;
+    }
+  }
+
   private clearPreviousSelection() {
-    console.log("> *** clear selection ***")
     this.selectedField = undefined;
     this.fields.forEach(field => {
       field.isSelected = false;
