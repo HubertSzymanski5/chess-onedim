@@ -1,0 +1,15 @@
+<div class="board">
+  <div *ngFor="let field of fields"
+       class="field"
+       [ngClass]="{
+          'selected': field.isSelected,
+          'possible-move': field.isPossibleMoveDest,
+          'piece': !field.isEmpty()}"
+       (click)="selectOrMove(field)">
+    <!-- TODO: i think it would be nice to find better font -->
+    <p class="field-label">{{ field.index + 1 }}</p>
+    <img *ngIf="!field.isEmpty()"
+         [src]="field.pieceImgSrc()"
+         [alt]="field.occupiedBy + ' ' + field.piece">
+  </div>
+</div>
