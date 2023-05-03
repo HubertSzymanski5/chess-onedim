@@ -21,7 +21,9 @@ export class BoardComponent implements OnInit {
   }
 
   interactWithField(field: Field) {
-    if (this.selectedField && field.isPossibleMoveDest) {
+    if (this.selectedField == field) {
+      this.clearPreviousSelection();
+    } else if (this.selectedField && field.isPossibleMoveDest) {
       this.move(field);
     } else {
       this.clearPreviousSelection();
