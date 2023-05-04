@@ -15,6 +15,7 @@ export class BoardComponent implements OnInit {
     .map((_, i) => new Field(i))];
 
   private selectedField?: Field;
+  private turn: Player = Player.WHITE;
 
   ngOnInit(): void {
     this.setupInitialPosition();
@@ -35,10 +36,11 @@ export class BoardComponent implements OnInit {
     field.setPiece(this.selectedField?.occupiedBy!, this.selectedField?.piece!)
     this.selectedField?.setEmpty();
     this.clearPreviousSelection();
+    this.turn = this.turn === Player.WHITE ? Player.BLACK : Player.WHITE;
   }
 
   private selectField(field: Field) {
-    if (field.isEmpty()) return;
+    if (field.isEmpty() || field.occupiedBy.valueOf() != this.turn.valueOf()) return;
     this.selectedField = field;
 
     field.isSelected = true;
@@ -111,4 +113,8 @@ export class BoardComponent implements OnInit {
     this.fields[6].setPiece(FieldOccupiedType.BLACK, PieceType.KNIGHT)
     this.fields[7].setPiece(FieldOccupiedType.BLACK, PieceType.KING)
   }
+}
+
+enum Player {
+  WHITE='white', BLACK='black'
 }
