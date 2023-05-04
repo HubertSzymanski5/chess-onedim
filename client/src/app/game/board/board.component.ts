@@ -1,5 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {Field, FieldOccupiedType, PieceType} from "./field";
+import {Player} from "../player";
+import {PositionValidatorService} from "../position-validator.service";
+import {cloneDeep} from "lodash";
 
 const BOARD_LENGTH = 8;
 
@@ -16,6 +19,9 @@ export class BoardComponent implements OnInit {
 
   private selectedField?: Field;
   private turn: Player = Player.WHITE;
+
+  constructor(private positionValidator: PositionValidatorService) {
+  }
 
   ngOnInit(): void {
     this.setupInitialPosition();
@@ -35,8 +41,8 @@ export class BoardComponent implements OnInit {
   private move(field: Field) {
     field.setPiece(this.selectedField?.occupiedBy!, this.selectedField?.piece!)
     this.selectedField?.setEmpty();
-    this.clearPreviousSelection();
     this.turn = this.turn === Player.WHITE ? Player.BLACK : Player.WHITE;
+    this.clearPreviousSelection();
   }
 
   private selectField(field: Field) {
@@ -44,57 +50,8 @@ export class BoardComponent implements OnInit {
     this.selectedField = field;
 
     field.isSelected = true;
-    this.markPossibleDestinations(field);
-  }
-
-  private markPossibleDestinations(field: Field) {
-    const i = field.index;
-    switch (field.piece) {
-      case PieceType.KING:
-        this.kingMoves(i, field);
-        break;
-      case PieceType.KNIGHT:
-        this.knightMoves(i, field);
-        break;
-      case PieceType.ROOK:
-        this.rookMoves(i, field);
-        break;
-    }
-  }
-
-  private rookMoves(i: number, field: Field) {
-    let next = i;
-    while (++next < 8 && this.fields[next].occupiedBy !== field.occupiedBy) {
-      this.fields[next].isPossibleMoveDest = true;
-      if (!this.fields[next].isEmpty()) {
-        break;
-      }
-    }
-    next = i;
-    while (--next < 8 && this.fields[next].occupiedBy !== field.occupiedBy) {
-      this.fields[next].isPossibleMoveDest = true;
-      if (!this.fields[next].isEmpty()) {
-        break;
-      }
-    }
-  }
-
-  private knightMoves(i: number, field: Field) {
-    if (i - 2 >= 0 && this.fields[i - 2].occupiedBy !== field.occupiedBy) {
-      this.fields[i - 2].isPossibleMoveDest = true;
-    }
-    if (i + 2 < 8 && this.fields[i + 2].occupiedBy !== field.occupiedBy) {
-      this.fields[i + 2].isPossibleMoveDest = true;
-    }
-  }
-
-  private kingMoves(i: number, field: Field) {
-    if (i - 1 >= 0 && this.fields[i - 1].occupiedBy !== field.occupiedBy) {
-      this.fields[i - 1].isPossibleMoveDest = true;
-    }
-    if (i + 1 < 8 && this.fields[i + 1].occupiedBy !== field.occupiedBy) {
-      this.fields[i + 1].isPossibleMoveDest = true;
-    }
+    this.positionValidator.markValidDestinations(this.fields, field, this.turn);
+    // this.markPossibleDestinations(field);
   }
 
   private clearPreviousSelection() {
@@ -113,8 +70,4 @@ export class BoardComponent implements OnInit {
     this.fields[6].setPiece(FieldOccupiedType.BLACK, PieceType.KNIGHT)
     this.fields[7].setPiece(FieldOccupiedType.BLACK, PieceType.KING)
   }
-}
-
-enum Player {
-  WHITE='white', BLACK='black'
 }
