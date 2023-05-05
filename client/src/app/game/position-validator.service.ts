@@ -8,10 +8,33 @@ import {cloneDeep} from "lodash";
 })
 export class PositionValidatorService {
 
-  constructor() { }
+  constructor() {
+  }
 
-  checkForMate(): boolean {
-    return false;
+  checkForTheEnd(board: Field[], turn: Player) {
+    console.log(board.filter(f => f.isPossibleMoveDest));
+    const boardCopy = this.boardWithAllControlledFields(board, turn);
+    const noValidMoves = boardCopy.filter(f => f.isPossibleMoveDest).length === 0;
+    const isCurrentPlayerInCheck = this.boardWithAllControlledFields(board, this.nextPlayer(turn))
+      .filter(f => f.occupiedBy.valueOf() === turn.valueOf()
+      && f.piece === PieceType.KING
+      && f.isPossibleMoveDest).length !== 0;
+    return noValidMoves ? isCurrentPlayerInCheck ? `${this.nextPlayer(turn).toUpperCase()} WINS` : "PAT" : undefined;
+  }
+
+  private boardWithAllControlledFields(board: Field[], turn: Player): Field[] {
+    return board.filter(field => field.occupiedBy.valueOf() === turn.valueOf())
+      .map(field => {
+        const clonedBoard = cloneDeep(board);
+        this.markValidDestinations(clonedBoard, field, turn);
+        return clonedBoard;
+      })
+      .reduce((result, current) => {
+        result.forEach((field, index) => {
+          field.isPossibleMoveDest ||= current[index].isPossibleMoveDest;
+        });
+        return result;
+      });
   }
 
   markValidDestinations(board: Field[], selected: Field, turn: Player): void {
@@ -112,11 +135,14 @@ function printBoard(fields: Field[]) {
       let s = "";
       switch (f.piece) {
         case PieceType.KING:
-          s = 'k'; break;
+          s = 'k';
+          break;
         case PieceType.KNIGHT:
-          s = 'n'; break;
+          s = 'n';
+          break;
         case PieceType.ROOK:
-          s = 'r'; break;
+          s = 'r';
+          break;
 
       }
       if (f.occupiedBy === FieldOccupiedType.WHITE) {

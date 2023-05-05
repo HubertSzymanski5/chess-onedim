@@ -43,6 +43,11 @@ export class BoardComponent implements OnInit {
     this.selectedField?.setEmpty();
     this.turn = this.turn === Player.WHITE ? Player.BLACK : Player.WHITE;
     this.clearPreviousSelection();
+    let result = this.positionValidator.checkForTheEnd(this.fields, this.turn)
+    if (result) {
+      // TODO: it should trigger some popup?
+      alert(result);
+    }
   }
 
   private selectField(field: Field) {
@@ -51,7 +56,6 @@ export class BoardComponent implements OnInit {
 
     field.isSelected = true;
     this.positionValidator.markValidDestinations(this.fields, field, this.turn);
-    // this.markPossibleDestinations(field);
   }
 
   private clearPreviousSelection() {
